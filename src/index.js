@@ -115,6 +115,7 @@ function render() {
   mesh.rotation.x += 0.01;
   mesh.rotation.y += 0.02;
   composer.render();
+  // renderer.render(scene, camera);
 }
 
 animate();
