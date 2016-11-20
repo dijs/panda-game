@@ -1,7 +1,5 @@
-import {
-  Scene, PerspectiveCamera, CubeGeometry, MeshNormalMaterial, Mesh,
-  WebGLRenderer, MeshBasicMaterial, BoxGeometry
-} from 'three';
+const THREE = require('three');
+const EffectComposer = require('three-effectcomposer')(THREE);
 
 const pandaImageUrl = 'http://assets.worldwildlife.org/photos/81/images/carousel_small/Giant_Panda_Why_They_Matter_image_(c)_Bernard_De_Wetter_WWF_Canon.jpg?1345563751';
 
@@ -14,24 +12,24 @@ void main() {
 }
 `;
 
-const scene = new Scene();
+const scene = new THREE.Scene();
 
-const camera = new PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
 camera.position.z = 5;
 
 scene.add(camera);
 
-const geometry = new BoxGeometry(1, 1, 1);
-// const material = new MeshBasicMaterial({
-//   color: 0xff0000,
-//   wireframe: true
-// });
-const material = new MeshNormalMaterial();
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshBasicMaterial({
+  color: 0xff0000,
+  wireframe: false
+});
+// const material = new THREE.MeshNormalMaterial();
 
-const mesh = new Mesh(geometry, material);
+const mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
 
-const renderer = new WebGLRenderer();
+const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 document.body.appendChild(renderer.domElement);
