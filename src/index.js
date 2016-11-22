@@ -1,7 +1,9 @@
 const THREE = require('three');
 const EffectComposer = require('three-effectcomposer')(THREE);
 
-const pandaImageUrl = 'http://assets.worldwildlife.org/photos/81/images/carousel_small/Giant_Panda_Why_They_Matter_image_(c)_Bernard_De_Wetter_WWF_Canon.jpg?1345563751';
+// const pandaImageUrl = 'http://assets.worldwildlife.org/photos/81/images/carousel_small/Giant_Panda_Why_They_Matter_image_(c)_Bernard_De_Wetter_WWF_Canon.jpg?1345563751';
+
+import waterColorShader from './watercolor-shader';
 
 THREE.DotScreenShader = {
   uniforms: {
@@ -67,15 +69,6 @@ THREE.RGBShiftShader = {
   ].join("\n")
 };
 
-const shader = `
-void main() {
-  gl_FragColor = vec4(1.0,  // R
-                      0.0,  // G
-                      1.0,  // B
-                      1.0); // A
-}
-`;
-
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
@@ -84,7 +77,8 @@ camera.position.z = 5;
 scene.add(camera);
 
 const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshNormalMaterial();
+// const material = new THREE.MeshNormalMaterial();
+const material = new THREE.ShaderMaterial(waterColorShader);
 
 const mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
@@ -96,13 +90,14 @@ const composer = new EffectComposer(renderer)
 composer.addPass(new EffectComposer.RenderPass(scene, camera))
 
 // Redraw with a shader
-const dotEffect = new EffectComposer.ShaderPass(THREE.DotScreenShader);
+const dotEffect = new EffectComposer.ShaderPass(waterColorShader);
+dotEffect.renderToScreen = true;
 composer.addPass(dotEffect);
 
 // And another shader, drawing to the screen at this point
-const shiftEffect = new EffectComposer.ShaderPass(THREE.RGBShiftShader)
-shiftEffect.renderToScreen = true;
-composer.addPass(shiftEffect);
+// const shiftEffect = new EffectComposer.ShaderPass(THREE.RGBShiftShader)
+// shiftEffect.renderToScreen = true;
+// composer.addPass(shiftEffect);
 
 document.body.appendChild(renderer.domElement);
 
@@ -114,8 +109,9 @@ function animate() {
 function render() {
   mesh.rotation.x += 0.01;
   mesh.rotation.y += 0.02;
-  composer.render();
-  // renderer.render(scene, camera);
+  waterColorShader.uniforms.u_time.value += 0.05;
+  // composer.render();
+  renderer.render(scene, camera);
 }
 
 animate();
