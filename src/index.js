@@ -21,6 +21,8 @@ const geometry = new THREE.BoxGeometry(1, 1, 1);
 const material = new THREE.MeshNormalMaterial();
 
 const mesh = new THREE.Mesh(geometry, material);
+mesh.rotation.x = 0.3;
+mesh.rotation.y = 0.2;
 scene.add(mesh);
 
 const renderer = new THREE.WebGLRenderer();
@@ -45,9 +47,9 @@ function animate() {
 }
 
 function render() {
-  mesh.rotation.x += 0.01;
-  mesh.rotation.y += 0.02;
-  uniforms.u_time.value += 0.05;
+  // mesh.rotation.x += 0.01;
+  // mesh.rotation.y += 0.02;
+  watercolorEffect.material.uniforms.u_time.value += 0.05;
   composer.render();
 }
 
