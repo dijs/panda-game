@@ -24,6 +24,11 @@ module.exports = {
         query: {
           presets: ['es2015'],
         }
+      },
+      {
+        test: /\.(frag|vert)$/,
+        include: path.join(__dirname, 'src'),
+        loader: 'raw-loader',
       }
     ]
   },
