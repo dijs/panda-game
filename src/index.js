@@ -77,8 +77,7 @@ camera.position.z = 5;
 scene.add(camera);
 
 const geometry = new THREE.BoxGeometry(1, 1, 1);
-// const material = new THREE.MeshNormalMaterial();
-const material = new THREE.ShaderMaterial(waterColorShader);
+const material = new THREE.MeshNormalMaterial();
 
 const mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
@@ -89,15 +88,9 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 const composer = new EffectComposer(renderer)
 composer.addPass(new EffectComposer.RenderPass(scene, camera))
 
-// Redraw with a shader
 const dotEffect = new EffectComposer.ShaderPass(waterColorShader);
 dotEffect.renderToScreen = true;
 composer.addPass(dotEffect);
-
-// And another shader, drawing to the screen at this point
-// const shiftEffect = new EffectComposer.ShaderPass(THREE.RGBShiftShader)
-// shiftEffect.renderToScreen = true;
-// composer.addPass(shiftEffect);
 
 document.body.appendChild(renderer.domElement);
 
@@ -110,8 +103,7 @@ function render() {
   mesh.rotation.x += 0.01;
   mesh.rotation.y += 0.02;
   waterColorShader.uniforms.u_time.value += 0.05;
-  // composer.render();
-  renderer.render(scene, camera);
+  composer.render();
 }
 
 animate();
