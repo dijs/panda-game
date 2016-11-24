@@ -5,6 +5,7 @@ const vertexShader = require('./watercolor.vert');
 
 const uniforms = {
   u_time: { type: "f", value: 1.0 },
+  u_resolution: { type: "v2", value: new THREE.Vector2() },
   tDiffuse: { type: "t", value: null }
 };
 
@@ -21,8 +22,8 @@ const geometry = new THREE.BoxGeometry(1, 1, 1);
 const material = new THREE.MeshNormalMaterial();
 
 const mesh = new THREE.Mesh(geometry, material);
-mesh.rotation.x = 0.3;
-mesh.rotation.y = 0.2;
+// mesh.rotation.x = 0.3;
+// mesh.rotation.y = 0.2;
 scene.add(mesh);
 
 const renderer = new THREE.WebGLRenderer();
@@ -41,16 +42,25 @@ composer.addPass(watercolorEffect);
 
 document.body.appendChild(renderer.domElement);
 
+onWindowResize();
+window.addEventListener( 'resize', onWindowResize, false );
+
 function animate() {
   requestAnimationFrame(animate);
   render();
 }
 
 function render() {
-  // mesh.rotation.x += 0.01;
-  // mesh.rotation.y += 0.02;
+  mesh.rotation.x += 0.01;
+  mesh.rotation.y += 0.02;
   watercolorEffect.material.uniforms.u_time.value += 0.05;
   composer.render();
+}
+
+function onWindowResize() {
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  watercolorEffect.material.uniforms.u_resolution.value.x = renderer.domElement.width;
+  watercolorEffect.material.uniforms.u_resolution.value.y = renderer.domElement.height;
 }
 
 animate();

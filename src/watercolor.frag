@@ -1,75 +1,141 @@
-#ifdef GL_ES
-precision mediump float;
-#endif
+// created by florian berger (flockaroo) - 2016
+// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
-uniform vec2 u_resolution;
-uniform float u_time;
-uniform vec2 u_mouse;
+// trying to resemble watercolors
+
+#define Res  u_resolution.xy
+#define Res0 u_resolution.xy
+#define Res1 u_resolution.xy
 
 uniform sampler2D tDiffuse;
-varying vec2 vUv;
+uniform vec2 u_resolution;
 
-vec3 mod289(vec3 x) {
-  return x - floor(x * (1.0 / 289.0)) * 289.0;
+#define PI 3.14159265358979
+
+vec4 getCol(vec2 pos)
+{
+    vec2 uv=pos/Res0;
+    vec4 c1 = texture2D(tDiffuse,uv);
+    vec4 c2 = vec4(.4); // gray on greenscreen
+    float d = clamp(dot(c1.xyz,vec3(-0.5,1.0,-0.5)),0.0,1.0);
+    return mix(c1,c2,1.8*d);
 }
 
-vec2 mod289(vec2 x) {
-  return x - floor(x * (1.0 / 289.0)) * 289.0;
+vec4 getCol2(vec2 pos)
+{
+    vec2 uv=pos/Res0;
+    vec4 c1 = texture2D(tDiffuse,uv);
+    vec4 c2 = vec4(1.5); // bright white on greenscreen
+    float d = clamp(dot(c1.xyz,vec3(-0.5,1.0,-0.5)),0.0,1.0);
+    return mix(c1,c2,1.8*d);
 }
 
-vec3 permute(vec3 x) {
-  return mod289(((x*34.0)+1.0)*x);
+vec2 getGrad(vec2 pos,float delta)
+{
+    vec2 d=vec2(delta,0);
+    return vec2(
+        dot((getCol(pos+d.xy)-getCol(pos-d.xy)).xyz,vec3(.333)),
+        dot((getCol(pos+d.yx)-getCol(pos-d.yx)).xyz,vec3(.333))
+    )/delta;
 }
 
-float snoise(vec2 v)
-  {
-  const vec4 C = vec4(0.211324865405187,  // (3.0-sqrt(3.0))/6.0
-                      0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)
-                     -0.577350269189626,  // -1.0 + 2.0 * C.x
-                      0.024390243902439); // 1.0 / 41.0
-  vec2 i  = floor(v + dot(v, C.yy) );
-  vec2 x0 = v -   i + dot(i, C.xx);
-
-  vec2 i1;
-  i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-  vec4 x12 = x0.xyxy + C.xxzz;
- x12.xy -= i1;
-
-  i = mod289(i); // Avoid truncation effects in permutation
-  vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
-		+ i.x + vec3(0.0, i1.x, 1.0 ));
-
-  vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
-  m = m*m ;
-  m = m*m ;
-
-  vec3 x = 2.0 * fract(p * C.www) - 1.0;
-  vec3 h = abs(x) - 0.5;
-  vec3 ox = floor(x + 0.5);
-  vec3 a0 = x - ox;
-
-  m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
-
-  vec3 g;
-  g.x  = a0.x  * x0.x  + h.x  * x0.y;
-  g.yz = a0.yz * x12.xz + h.yz * x12.yw;
-  return 130.0 * dot(m, g);
+vec2 getGrad2(vec2 pos,float delta)
+{
+    vec2 d=vec2(delta,0);
+    return vec2(
+        dot((getCol2(pos+d.xy)-getCol2(pos-d.xy)).xyz,vec3(.333)),
+        dot((getCol2(pos+d.yx)-getCol2(pos-d.yx)).xyz,vec3(.333))
+    )/delta;
 }
 
+const vec2 k = vec2(23.1406926327792690,2.6651441426902251);
+
+float rnd7( vec2 uv ) { return fract( cos( mod( 1234567., 1024. * dot(uv,k) ) ) ); }
+float rnd8( vec2 uv ) { return fract( cos( mod( 12345678., 1024. * dot(uv,k) ) ) ); }
+float rnd9( vec2 uv ) { return fract( cos( mod( 123456780., 1024. * dot(uv,k) ) ) ); }
+
+vec4 getRand(vec2 pos)
+{
+  vec2 uv=pos/Res1;
+  float i = rnd9(uv);
+  return vec4(rnd9(uv),rnd8(uv),rnd7(uv),1.);
+}
+
+float htPattern(vec2 pos)
+{
+    float p;
+    float r=getRand(pos*.4/.7*1.).x;
+  	p=clamp((pow(r+.3,2.)-.45),0.,1.);
+    return p;
+}
+
+float getVal(vec2 pos, float level)
+{
+    return length(getCol(pos).xyz)+0.0001*length(pos-0.5*Res0);
+    return dot(getCol(pos).xyz,vec3(.333));
+}
+
+vec4 getBWDist(vec2 pos)
+{
+    return vec4(smoothstep(.9,1.1,getVal(pos,0.)*.9+htPattern(pos*.7)));
+}
+
+#define SampNum 24
+
+#define N(a) (a.yx*vec2(1,-1))
 
 void main() {
-  vec2 st = gl_FragCoord.xy/u_resolution.xy;
+  vec2 pos=((gl_FragCoord.xy-Res.xy*.5)/Res.y*Res.y)+Res.xy*.5;
+  vec2 pos2=pos;
+  vec2 pos3=pos;
+  vec2 pos4=pos;
+  vec2 pos0=pos;
+  vec3 col=vec3(0);
+  vec3 col2=vec3(0);
+  float cnt=0.0;
+  float cnt2=0.;
+  for(int i=0;i<1*SampNum;i++)
+  {
+      // gradient for outlines (gray on green screen)
+      vec2 gr =getGrad(pos, 2.0)+.0001*(getRand(pos ).xy-.5);
+      vec2 gr2=getGrad(pos2,2.0)+.0001*(getRand(pos2).xy-.5);
 
-  float distortion = 2.;
-  float distortion2 = 5.;
-  float yt = vUv.y - u_time * 0.1;
-  // smooth
-  float offset = snoise(vec2(yt * 2.0, 0.)) * 0.1;
-  // boost
-  // offset = offset * distortion * offset * distortion * offset;
-	offset += snoise(vec2(yt * 30.0, 0.)) * distortion2 * 0.001;
+      // gradient for wash effect (white on green screen)
+      vec2 gr3=getGrad2(pos3,2.0)+.0001*(getRand(pos3).xy-.5);
+      vec2 gr4=getGrad2(pos4,2.0)+.0001*(getRand(pos4).xy-.5);
 
-  vec2 source = vec2(fract(vUv.x + offset), vUv.y);
+      float grl=clamp(10.*length(gr),0.,1.);
+      float gr2l=clamp(10.*length(gr2),0.,1.);
 
-  gl_FragColor = texture2D(tDiffuse, source);
+      // outlines:
+      // stroke perpendicular to gradient
+      pos +=.8 *normalize(N(gr));
+      pos2-=.8 *normalize(N(gr2));
+      float fact=1.-float(i)/float(SampNum);
+      col+=fact*mix(vec3(1.2),getBWDist(pos).xyz*2.,grl);
+      col+=fact*mix(vec3(1.2),getBWDist(pos2).xyz*2.,gr2l);
+
+      // colors + wash effect on gradients:
+      // color gets lost from dark areas
+      pos3+=.25*normalize(gr3)+.5*(getRand(pos0*.07).xy-.5);
+      // to bright areas
+      pos4-=.5 *normalize(gr4)+.5*(getRand(pos0*.07).xy-.5);
+
+      float f1=3.*fact;
+      float f2=4.*(.7-fact);
+      col2+=f1*(getCol2(pos3).xyz+.25+.4*getRand(pos3*1.).xyz);
+      col2+=f2*(getCol2(pos4).xyz+.25+.4*getRand(pos4*1.).xyz);
+
+      cnt2+=f1+f2;
+      cnt+=fact;
+  }
+
+  // normalize
+  col/=cnt*2.5;
+  col2/=cnt2*1.65;
+
+  // outline + color
+  col = clamp(clamp(col*.9+.1,0.,1.)*col2,0.,1.);
+
+	gl_FragColor = vec4(col,1.0);
 }
