@@ -1,7 +1,7 @@
 const THREE = require('three');
 const EffectComposer = require('three-effectcomposer')(THREE);
-const fragmentShader = require('./watercolor.frag');
-const vertexShader = require('./watercolor.vert');
+const fragmentShader = require('./mountains.frag');
+const vertexShader = require('./mountains.vert');
 
 const uniforms = {
   u_time: { type: "f", value: 1.0 },
