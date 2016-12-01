@@ -6,7 +6,6 @@ const height = 600;
 
 const renderer = new PIXI.autoDetectRenderer(width, height);
 
-// The renderer will create a canvas element for you that you can then insert into the DOM.
 document.body.appendChild(renderer.view);
 
 function createCircle(color, x, y, r) {
@@ -49,6 +48,8 @@ panda.scale.x = 16;
 panda.y = height - 40;
 panda.x = 64;
 
+panda.vx = 0;
+
 stage.addChild(bg);
 stage.addChild(panda);
 
@@ -71,16 +72,35 @@ const mountainsShader = new PIXI.Filter('', mountainsFragmentShader, uniforms);
 
 stage.filters = [mountainsShader];
 
+function update() {
+  mountainsShader.uniforms.time += 0.05;
+
+  panda.x += panda.vx;
+
+  // each frame we spin the bunny around a bit
+  // panda.rotation += 0.01;
+}
+
 function animate() {
     requestAnimationFrame(animate);
-
-    mountainsShader.uniforms.time += 0.05;
-
-    // each frame we spin the bunny around a bit
-    // panda.rotation += 0.01;
-
-    // this is the main render call that makes pixi draw your container and its children.
+    update();
     renderer.render(stage);
 }
+
+const LEFT = 37;
+const RIGHT = 39;
+
+window.addEventListener('keydown', function (event) {
+  if (event.keyCode === LEFT) {
+    panda.vx = -4;
+  }
+  if (event.keyCode === RIGHT) {
+    panda.vx = 4;
+  }
+}, false);
+
+window.addEventListener('keyup', function (event) {
+  panda.vx = 0;
+}, false);
 
 animate();
