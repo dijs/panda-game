@@ -4,6 +4,8 @@ const mountainsFragmentShader = require('./mountains.frag');
 const width = 800;
 const height = 600;
 
+let worldPosition = 0;
+
 const renderer = new PIXI.autoDetectRenderer(width, height);
 
 document.body.appendChild(renderer.view);
@@ -47,11 +49,18 @@ panda.scale.y = 16;
 panda.scale.x = 16;
 panda.y = height - 40;
 panda.x = 64;
-
 panda.vx = 0;
+
+const checkpoints = Array(8).fill(0).map((e, i) => {
+  const x = 1000 * i + 100;
+  const checkpoint = createRectangle(0xFF0000, x, height / 2 - 32, 64, 64);
+  checkpoint.lx = x;
+  return checkpoint;
+});
 
 stage.addChild(bg);
 stage.addChild(panda);
+checkpoints.forEach(checkpoint => stage.addChild(checkpoint));
 
 const uniforms = {
   time: {
@@ -80,7 +89,12 @@ function update() {
   mountainsShader.uniforms.time += 0.05;
 
   panda.x += panda.vx;
+  worldPosition += panda.vx;
   mountainsShader.uniforms.position = panda.x;
+
+  checkpoints.forEach(checkpoint => {
+    checkpoint.x = checkpoint.lx - worldPosition;
+  });
 
   // each frame we spin the bunny around a bit
   // panda.rotation += 0.01;

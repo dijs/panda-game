@@ -31,9 +31,10 @@ void main() {
   }
   // Show texture over mountains
   vec4 bgColor = texture2D(uSampler, vTextureCoord);
-  if (bgColor.r == 1. && bgColor.g == 1. && bgColor.b == 1.) {
-    gl_FragColor = bgColor;
-  } else {
+  if (bgColor.r == 0. && bgColor.g == 0. && bgColor.b == 0.) {
+  // if (length(bgColor) == 0.) {
     gl_FragColor = vec4(color, 1.);
+  } else {
+    gl_FragColor = bgColor;
   }
 }
