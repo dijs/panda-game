@@ -50,6 +50,10 @@ panda.scale.x = 16;
 panda.y = height - 40;
 panda.x = 64;
 panda.vx = 0;
+panda.vy = 0;
+panda.jumpedAt = 0;
+
+const gravity = 9.8;
 
 const checkpoints = Array(8).fill(0).map((e, i) => {
   const x = 1000 * i + 100;
@@ -89,6 +93,15 @@ function update() {
   mountainsShader.uniforms.time += 0.05;
 
   panda.x += panda.vx;
+  if (panda.vy) {
+    const y = height - 40;
+    const t = (Date.now() - panda.jumpedAt) * 0.01;
+    panda.y = y + panda.vy * t + 0.5 * gravity * t * t;
+    if (panda.y > y) {
+      panda.y = y;
+      panda.vy = 0;
+    }
+  }
   worldPosition += panda.vx;
   mountainsShader.uniforms.position = panda.x;
 
@@ -108,6 +121,7 @@ function animate() {
 
 const LEFT = 37;
 const RIGHT = 39;
+const UP = 38;
 
 window.addEventListener('keydown', function (event) {
   if (event.keyCode === LEFT) {
@@ -116,10 +130,16 @@ window.addEventListener('keydown', function (event) {
   if (event.keyCode === RIGHT) {
     panda.vx = 4;
   }
+  if (event.keyCode === UP && !panda.vy) {
+    panda.vy = -70;
+    panda.jumpedAt = Date.now();
+  }
 }, false);
 
 window.addEventListener('keyup', function (event) {
-  panda.vx = 0;
+  if (event.keyCode === LEFT || event.keyCode === RIGHT) {
+    panda.vx = 0;
+  }
 }, false);
 
 animate();
