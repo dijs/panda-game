@@ -1,13 +1,12 @@
 uniform float u_time;
 uniform vec2 u_resolution;
+uniform sampler2D tDiffuse;
 
 void main() {
-
   vec2 uv = gl_FragCoord.xy / u_resolution.xy;
   // mountain range wave
   float y = (sin(uv.x * 7. + u_time) * 0.1) +
     0.5;
-
   vec3 color = vec3(0.);
   // mountain grass
   if (uv.y < y) {
@@ -18,6 +17,11 @@ void main() {
       color = vec3(1.);
     }
   }
-
-  gl_FragColor = vec4(color, 1.);
+  // Show texture over mountains
+  vec4 bgColor = texture2D(tDiffuse, uv);
+  if (length(bgColor.rgb) == 0.) {
+    gl_FragColor = vec4(color, 1.);
+  } else {
+    gl_FragColor = bgColor;
+  }
 }
