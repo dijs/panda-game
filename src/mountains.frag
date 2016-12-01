@@ -1,12 +1,17 @@
-uniform float u_time; // could use character position instead
-uniform vec2 u_resolution;
-uniform sampler2D tDiffuse;
+precision mediump float;
+
+uniform float time;
+uniform float width;
+uniform float height;
+
+varying vec2 vTextureCoord; //The coordinates of the current pixel
+uniform sampler2D uSampler; //The image data
 
 void main() {
-  vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+  vec2 uv = gl_FragCoord.xy / vec2(width, height);
   // mountain range wave
-  float y = (sin(uv.x * 7. + u_time) * 0.1) + 0.5;
-  float y2 = (sin(uv.x * 13. + u_time * 0.3) * 0.2) + 0.5;
+  float y = (sin(uv.x * 7. + time) * 0.1) + 0.5;
+  float y2 = (sin(uv.x * 13. + time * 0.3) * 0.2) + 0.5;
   vec3 color = vec3(0.);
   // far away mountains
   if (uv.y < y2) {
@@ -22,10 +27,10 @@ void main() {
     }
   }
   // Show texture over mountains
-  vec4 bgColor = texture2D(tDiffuse, uv);
-  if (length(bgColor.rgb) == 0.) {
-    gl_FragColor = vec4(color, 1.);
-  } else {
+  vec4 bgColor = texture2D(uSampler, vTextureCoord);
+  if (bgColor.r == 1. && bgColor.g == 1. && bgColor.b == 1.) {
     gl_FragColor = bgColor;
+  } else {
+    gl_FragColor = vec4(color, 1.);
   }
 }

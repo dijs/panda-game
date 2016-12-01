@@ -1,13 +1,10 @@
 const PIXI = require('pixi.js');
 const mountainsFragmentShader = require('./mountains.frag');
-const mountainsVertexShader = require('./mountains.vert');
 
 const width = 800;
 const height = 600;
 
-// You can use either `new PIXI.WebGLRenderer`, `new PIXI.CanvasRenderer`, or `PIXI.autoDetectRenderer`
-// which will try to choose the best renderer for the environment you are in.
-const renderer = new PIXI.WebGLRenderer(width, height);
+const renderer = new PIXI.autoDetectRenderer(width, height);
 
 // The renderer will create a canvas element for you that you can then insert into the DOM.
 document.body.appendChild(renderer.view);
@@ -32,20 +29,10 @@ function createRectangle(color, x, y, w, h) {
   return rectangle;
 }
 
-class MountainsShader extends PIXI.Filter {
-  constructor() {
-    super(
-      mountainsVertexShader,
-      mountainsFragmentShader
-    );
-  }
-}
-
-// generate bg from waves
-
 const stage = new PIXI.Container();
 
-const bg = createRectangle(0xFFFFFF, 0, 0, width, height);
+// Create rectangle to take up whole space...
+const bg = createRectangle(0x000000, 0, 0, width, height);
 
 const panda = new PIXI.Container();
 const head = new PIXI.Container();
@@ -65,11 +52,26 @@ panda.x = 64;
 stage.addChild(bg);
 stage.addChild(panda);
 
-const mountainsShader = new MountainsShader();
+const uniforms = {
+  time: {
+    type: '1f',
+    value: 0
+  },
+  width: {
+    type: '1f',
+    value: width
+  },
+  height: {
+    type: '1f',
+    value: height
+  }
+};
 
-bg.filters = [mountainsShader];
+const mountainsShader = new PIXI.Filter('', mountainsFragmentShader, uniforms);
 
-function animate() {    // start the timer for the next animation loop
+stage.filters = [mountainsShader];
+
+function animate() {
     requestAnimationFrame(animate);
 
     mountainsShader.uniforms.time += 0.05;
