@@ -3,15 +3,18 @@ precision mediump float;
 uniform float time;
 uniform float width;
 uniform float height;
+uniform float position;
 
 varying vec2 vTextureCoord; //The coordinates of the current pixel
 uniform sampler2D uSampler; //The image data
 
+float backgroundMovementSpeed = 0.005;
+
 void main() {
   vec2 uv = gl_FragCoord.xy / vec2(width, height);
   // mountain range wave
-  float y = (sin(uv.x * 7. + time) * 0.1) + 0.5;
-  float y2 = (sin(uv.x * 13. + time * 0.3) * 0.2) + 0.5;
+  float y = (sin(uv.x * 7. + position * backgroundMovementSpeed) * 0.1) + 0.5;
+  float y2 = (sin(uv.x * 13. + position * backgroundMovementSpeed * 0.3) * 0.2) + 0.5;
   vec3 color = vec3(0.);
   // far away mountains
   if (uv.y < y2) {

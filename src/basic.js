@@ -65,7 +65,11 @@ const uniforms = {
   height: {
     type: '1f',
     value: height
-  }
+  },
+  position: {
+    type: '1f',
+    value: 0
+  },
 };
 
 const mountainsShader = new PIXI.Filter('', mountainsFragmentShader, uniforms);
@@ -76,6 +80,7 @@ function update() {
   mountainsShader.uniforms.time += 0.05;
 
   panda.x += panda.vx;
+  mountainsShader.uniforms.position = panda.x;
 
   // each frame we spin the bunny around a bit
   // panda.rotation += 0.01;
