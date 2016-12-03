@@ -68,8 +68,8 @@ checkpoints.forEach(checkpoint => stage.addChild(checkpoint));
 
 var pandaBody = new PIXI.Graphics();
 stage.addChild(pandaBody);
-pandaBody.position.x = width / 2;
-pandaBody.position.y = height / 2;
+pandaBody.position.x = 200;
+pandaBody.position.y = 200;
 
 const uniforms = {
   time: {
@@ -94,6 +94,26 @@ const mountainsShader = new PIXI.Filter('', mountainsFragmentShader, uniforms);
 
 stage.filters = [mountainsShader];
 
+function renderPandaBodyBreathing() {
+  pandaBody.clear();
+  pandaBody.lineStyle(0);
+  pandaBody.beginFill(0xFFFFFF, 1);
+  pandaBody.moveTo(pandaBody.x, pandaBody.y);
+
+  var n = 24;
+  var alpha = 2 * Math.PI / n;
+  var time = mountainsShader.uniforms.time;
+  var size = 50;
+
+  for (var i = 0; i <= n; i++) {
+    // Fluctuate body to look like breathing
+    var x = Math.sin(i * alpha) * (size + 2 * Math.sin(time)) + pandaBody.x;
+    var y = Math.cos(i * alpha) * size + pandaBody.y;
+    pandaBody.lineTo(x, y);
+  }
+  pandaBody.endFill();
+}
+
 function update() {
   mountainsShader.uniforms.time += 0.05;
 
@@ -117,25 +137,11 @@ function update() {
     checkpoint.x = checkpoint.lx - worldPosition;
   });
 
-  pandaBody.clear();
-  pandaBody.lineStyle(0);
-pandaBody.beginFill(0xFFFFFF, 1);
-pandaBody.drawCircle(pandaBody.x / 2, pandaBody.y / 2,50);
-pandaBody.endFill();
-
-  // pandaBody.beginFill(0xFFFFFF, 1);
-  // pandaBody.moveTo(pandaBody.x, pandaBody.y);
-  // pandaBody.arcTo(pandaBody.x, pandaBody.y, 50, 0, 2 * Math.PI);
-  // pandaBody.arcTo(pandaBody.x, pandaBody.y, 50, 0, 2 * Math.PI);
-  // pandaBody.lineTo(pandaBody.x + 100, pandaBody.y + 10);
-  // pandaBody.endFill();
-
-  // each frame we spin the bunny around a bit
-  // panda.rotation += 0.01;
+  renderPandaBodyBreathing();
 }
 
 function animate() {
-    // requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
     update();
     renderer.render(stage);
 }
