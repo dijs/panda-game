@@ -6,7 +6,7 @@ const height = 600;
 
 let worldPosition = 0;
 
-const renderer = new PIXI.autoDetectRenderer(width, height);
+const renderer = new PIXI.autoDetectRenderer(width, height, { antialias: true });
 
 document.body.appendChild(renderer.view);
 
@@ -66,6 +66,11 @@ stage.addChild(bg);
 stage.addChild(panda);
 checkpoints.forEach(checkpoint => stage.addChild(checkpoint));
 
+var pandaBody = new PIXI.Graphics();
+stage.addChild(pandaBody);
+pandaBody.position.x = width / 2;
+pandaBody.position.y = height / 2;
+
 const uniforms = {
   time: {
     type: '1f',
@@ -102,6 +107,9 @@ function update() {
       panda.vy = 0;
     }
   }
+
+  // Check if avatar is in center of screen
+
   worldPosition += panda.vx;
   mountainsShader.uniforms.position = panda.x;
 
@@ -109,12 +117,25 @@ function update() {
     checkpoint.x = checkpoint.lx - worldPosition;
   });
 
+  pandaBody.clear();
+  pandaBody.lineStyle(0);
+pandaBody.beginFill(0xFFFFFF, 1);
+pandaBody.drawCircle(pandaBody.x / 2, pandaBody.y / 2,50);
+pandaBody.endFill();
+
+  // pandaBody.beginFill(0xFFFFFF, 1);
+  // pandaBody.moveTo(pandaBody.x, pandaBody.y);
+  // pandaBody.arcTo(pandaBody.x, pandaBody.y, 50, 0, 2 * Math.PI);
+  // pandaBody.arcTo(pandaBody.x, pandaBody.y, 50, 0, 2 * Math.PI);
+  // pandaBody.lineTo(pandaBody.x + 100, pandaBody.y + 10);
+  // pandaBody.endFill();
+
   // each frame we spin the bunny around a bit
   // panda.rotation += 0.01;
 }
 
 function animate() {
-    requestAnimationFrame(animate);
+    // requestAnimationFrame(animate);
     update();
     renderer.render(stage);
 }
